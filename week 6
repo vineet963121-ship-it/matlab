@@ -1,0 +1,240 @@
+1
+% Problem 1 - Convolution with step function
+t = -10:0.01:10;                  % time vector
+x = 1./(1+t.^2);                  % x(t)
+u = double(t>=0);                 % unit step u(t)
+
+% Convolution
+dt = t(2)-t(1);
+y = conv(x,u,'same')*dt;
+
+figure;
+subplot(3,1,1); plot(t,x,'LineWidth',1.5); grid on;
+title('x(t) = 1/(1+t^2)');
+subplot(3,1,2); plot(t,u,'LineWidth',1.5); grid on;
+title('u(t)');
+subplot(3,1,3); plot(t,y,'LineWidth',1.5); grid on;
+title('y(t) = x(t) * u(t)');
+2
+% Problem 2 - sinc and given g(t)
+t = -10:0.01:10;
+x = sin(pi*t)./(pi*t); x(t==0) = 1;    % sinc function
+g = double((t>=0)&(t<=2*pi));          % example rectangular g(t)
+
+% Convolution
+dt = t(2)-t(1);
+c = conv(x,g,'same')*dt;
+
+figure;
+subplot(3,1,1); plot(t,x,'LineWidth',1.5); grid on; title('x(t) = sinc(t)');
+subplot(3,1,2); plot(t,g,'LineWidth',1.5); grid on; title('g(t)');
+subplot(3,1,3); plot(t,c,'LineWidth',1.5); grid on; title('c(t) = x(t) * g(t)');
+
+3
+
+% Problem 3 - Convolution of piecewise signals
+t = -10:0.01:10;
+x = double((t>=-1)&(t<=1));   % Example rectangular pulse [-1,1]
+g = double((t>=0)&(t<=3));    % Example rectangular pulse [0,3]
+
+% Convolution
+dt = t(2)-t(1);
+c = conv(x,g,'same')*dt;
+
+figure;
+subplot(3,1,1); plot(t,x,'LineWidth',1.5); grid on; title('x(t)');
+subplot(3,1,2); plot(t,g,'LineWidth',1.5); grid on; title('g(t)');
+subplot(3,1,3); plot(t,c,'LineWidth',1.5); grid on; title('c(t) = x(t)*g(t)');
+
+4
+
+% Problem 4 - Convolution with system response
+t = -3:0.01:3;
+
+% Example periodic input: triangular x(t) = (t+1).*(t>=-1 & t<=0) + (1-t).*(t>0 & t<=1)
+x = (t+1).*(t>=-1 & t<=0) + (1-t).*(t>0 & t<=1);
+
+% Impulse response
+h = t.*((t>=0)&(t<=1.5));
+
+% Convolution
+dt = t(2)-t(1);
+y = conv(x,h,'same')*dt;
+
+figure;
+subplot(3,1,1); plot(t,x,'LineWidth',1.5); grid on; title('x(t) input');
+subplot(3,1,2); plot(t,h,'LineWidth',1.5); grid on; title('h(t) impulse response');
+subplot(3,1,3); plot(t,y,'LineWidth',1.5); grid on; title('y(t) = x(t)*h(t)');
+
+5
+
+% Problem 5 - Stability classification using transfer functions
+s = tf('s');
+
+% Example (a) system: (D^2 + 8D + 12)y = (D-1)x
+H_a = (s-1)/(s^2 + 8*s + 12);
+figure; impulse(H_a); title('Impulse Response - System (a)');
+figure; step(H_a); title('Step Response - System (a)');
+
+% Similarly define for (b), (c), ... (h)
+H_b = (s+5)/(s*(s^2+3*s+2));
+% ... continue defining all systems
+
+
+Perfect 👍 Let’s go step by step for **Problem 5** (stability analysis).
+We need to check for each system (a)–(h):
+
+* **External (BIBO) stability** → depends on whether impulse response is absolutely integrable (all poles in LHP).
+* **Internal stability** → depends on pole locations:
+
+  * LHP poles → asymptotically stable.
+  * jω-axis simple poles → marginally stable.
+  * RHP poles or repeated jω poles → unstable.
+
+I’ll also give you **MATLAB code** that:
+
+1. Defines transfer functions,
+2. Finds poles/zeros,
+3. Plots impulse and step responses,
+4. Classifies stability.
+
+---
+
+## **Manual Stability Summary**
+
+### (a) $(D^2+8D+12)y(t) = (D-1)x(t)$
+
+* Transfer function: $H(s) = \frac{s-1}{s^2+8s+12}$.
+* Denominator roots: $s=-2, -6$. (Both LHP)
+  ✅ **Externally stable**
+  ✅ **Internally asymptotically stable**
+
+---
+
+### (b) $D(D^2+3D+2)y(t) = (D+5)x(t)$
+
+* $H(s) = \frac{s+5}{s(s+1)(s+2)}$.
+* Poles: $0, -1, -2$.
+* Pole at $0$ → **marginally stable** internally,
+* Not BIBO stable (impulse response not absolutely integrable).
+  ❌ **Externally unstable**
+  ⚠️ **Internally marginally stable**
+
+---
+
+### (c) $D^2(D^2+2)y(t) = x(t)$
+
+* $H(s) = \frac{1}{s^2(s^2+2)}$.
+* Poles: $0$ (double), $\pm j\sqrt{2}$.
+* Repeated pole at 0 → unbounded.
+  ❌ **Externally unstable**
+  ❌ **Internally unstable**
+
+---
+
+### (d) $(D+1)(D^2-6D+5)y(t) = (3D+1)x(t)$
+
+* $H(s) = \frac{3s+1}{(s+1)(s-1)(s-5)}$.
+* Poles: $-1, +1, +5$.
+* RHP poles → unstable.
+  ❌ **Externally unstable**
+  ❌ **Internally unstable**
+
+---
+
+### (e) $(D+1)(D^2+2D+5)^2y(t) = x(t)$
+
+* $H(s) = \frac{1}{(s+1)(s^2+2s+5)^2}$.
+* Poles: $-1, -1±j2$ (double pair). All in LHP.
+  ✅ **Externally stable**
+  ✅ **Internally asymptotically stable**
+
+---
+
+### (f) $(D+1)(D^2+9)y(t) = (2D+9)x(t)$
+
+* $H(s) = \frac{2s+9}{(s+1)(s^2+9)}$.
+* Poles: $-1, ±3j$.
+* Simple jω poles → bounded oscillation.
+  ❌ **Externally unstable**
+  ⚠️ **Internally marginally stable**
+
+---
+
+### (g) $(D+1)(D^2+9)^2 y(t) = (2D+9)x(t)$
+
+* $H(s) = \frac{2s+9}{(s+1)(s^2+9)^2}$.
+* Poles: $-1, ±3j$ (double).
+* Repeated jω poles → unbounded.
+  ❌ **Externally unstable**
+  ❌ **Internally unstable**
+
+---
+
+### (h) $(D^2+1)(D^2+4)(D^2+9)y(t) = (3D)x(t)$
+
+* $H(s) = \frac{3s}{(s^2+1)(s^2+4)(s^2+9)}$.
+* Poles: $\pm j, \pm 2j, \pm 3j$.
+* Pure imaginary simple poles → bounded oscillations.
+  ❌ **Externally unstable**
+  ⚠️ **Internally marginally stable**
+
+---
+
+## ✅ Final Classification Table
+
+| System | Poles              | BIBO (External) | Internal Stability    |
+| ------ | ------------------ | --------------- | --------------------- |
+| (a)    | -2, -6             | Stable          | Asymptotically stable |
+| (b)    | 0, -1, -2          | Unstable        | Marginally stable     |
+| (c)    | 0 (double), ±j√2   | Unstable        | Unstable              |
+| (d)    | -1, +1, +5         | Unstable        | Unstable              |
+| (e)    | -1, -1±j2 (double) | Stable          | Asymptotically stable |
+| (f)    | -1, ±3j            | Unstable        | Marginally stable     |
+| (g)    | -1, ±3j (double)   | Unstable        | Unstable              |
+| (h)    | ±j, ±2j, ±3j       | Unstable        | Marginally stable     |
+
+---
+
+## MATLAB Code for Part 5
+
+```matlab
+% Problem 5 - Stability analysis for all systems
+clc; clear; close all;
+s = tf('s');
+
+% Define systems
+H{1} = (s-1)/(s^2 + 8*s + 12);
+H{2} = (s+5)/(s*(s+1)*(s+2));
+H{3} = 1/(s^2*(s^2+2));
+H{4} = (3*s+1)/((s+1)*(s-1)*(s-5));
+H{5} = 1/((s+1)*(s^2+2*s+5)^2);
+H{6} = (2*s+9)/((s+1)*(s^2+9));
+H{7} = (2*s+9)/((s+1)*(s^2+9)^2);
+H{8} = (3*s)/((s^2+1)*(s^2+4)*(s^2+9));
+
+names = {'(a)','(b)','(c)','(d)','(e)','(f)','(g)','(h)'};
+
+for k=1:8
+    fprintf('\nSystem %s:\n', names{k});
+    disp(H{k});
+    poles = pole(H{k});
+    fprintf('Poles: %s\n', mat2str(poles));
+    
+    figure;
+    subplot(2,1,1); impulse(H{k});
+    title(['Impulse Response - System ' names{k}]);
+    subplot(2,1,2); step(H{k});
+    title(['Step Response - System ' names{k}]);
+end
+```
+
+---
+
+👉 Do you want me to also **add automatic stability classification in the MATLAB script** (so it prints “BIBO stable/unstable, Internal stable/marginal/unstable” for each system)?
+
+
+https://chatgpt.com/share/68d19fd6-043c-8003-bbd7-7c109e9d5c28
+https://g.co/gemini/share/233904c75283
+
+
