@@ -171,6 +171,10 @@ I’ll also give you **MATLAB code** that:
 
 ---
 
+
+
+
+
 ### (h) $(D^2+1)(D^2+4)(D^2+9)y(t) = (3D)x(t)$
 
 * $H(s) = \frac{3s}{(s^2+1)(s^2+4)(s^2+9)}$.
@@ -236,5 +240,54 @@ end
 
 https://chatgpt.com/share/68d19fd6-043c-8003-bbd7-7c109e9d5c28
 https://g.co/gemini/share/233904c75283
+
+% Define the time vector
+t_sim = -5:0.01:5; % Simulation time from -5 to 5 seconds with a step of 0.01
+
+% Define the input signal x(t)
+x = zeros(size(t_sim));
+for k = -3:3 % Loop to create the periodic signal for the desired time range
+    t_period = t_sim - 2*k;
+    x(t_period >= -1 & t_period <= 1) = (t_period(t_period >= -1 & t_period <= 1)).^2;
+end
+
+% Define the impulse response h(t)
+h = zeros(size(t_sim));
+h(t_sim >= 0 & t_sim <= 1.5) = t_sim(t_sim >= 0 & t_sim <= 1.5);
+
+% Perform the convolution
+% The conv function in MATLAB requires proper scaling of the output
+y = conv(x, h, 'same') * 0.01; % 'same' returns a vector the same size as the input, and we scale by the time step (0.01)
+
+% Plot the signals
+figure;
+
+% Plot x(t)
+subplot(3,1,1);
+plot(t_sim, x, 'LineWidth', 2);
+title('Input Signal x(t) = t^2 (periodic)');
+xlabel('t (seconds)');
+ylabel('x(t)');
+grid on;
+
+% Plot h(t)
+subplot(3,1,2);
+plot(t_sim, h, 'LineWidth', 2);
+title('Impulse Response h(t) = t * [u(t) - u(t-1.5)]');
+xlabel('t (seconds)');
+ylabel('h(t)');
+grid on;
+
+% Plot y(t)
+subplot(3,1,3);
+plot(t_sim, y, 'LineWidth', 2);
+title('Output y(t) = x(t) * h(t)');
+xlabel('t (seconds)');
+ylabel('y(t)');
+grid on;
+
+% Adjust plot layout for better viewing
+sgtitle('Convolution of a Periodic Signal with an Impulse Response');
+
 
 
