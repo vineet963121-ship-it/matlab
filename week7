@@ -1,1 +1,21 @@
+question 1
 
+clc,clear,clf;
+To=pi;
+Wo=2*pi/To;
+num_harmonics=5;
+t=-3*To:0.001:3*To;
+
+ao=0.5043;
+rrec=ao*ones(size(t));
+
+for n= 1:num_harmonics
+    an=0.504*2/(1+16*n^2);
+    bn=0.504*8*n/(1+16*n^2);
+    rrec = rrec +an*cos(n*Wo*t)+bn*sin(n*Wo*t);
+end
+figure;
+plot(t,rrec,"LineWidth",2);
+xlabel("t");
+ylabel("X(t)")
+grid on;
