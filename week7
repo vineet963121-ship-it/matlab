@@ -19,3 +19,23 @@ plot(t,rrec,"LineWidth",2);
 xlabel("t");
 ylabel("X(t)")
 grid on;
+
+
+
+clc; clear; clf;
+To = pi; wo = 2*pi/To;
+h = 0.001; t = 0:h:(To-h);
+y = exp(6*t/2); N = length(y);
+Co = sum(y)/(N-1);
+a = zeros(1, 10);
+b = zeros(1, 10);
+for n = 1:10 % Number of Fourier terms
+a(n) = 2*sum(y.*cos(n*wo*t))/(N-1);
+b(n) = 2*sum(y.*sin(n*wo*t))/(N-1);
+end
+Cn = sqrt(a.^2+b.^2); thetan = atan(-b./a);
+n = 0:10;
+subplot(2,2,1); stem(n,[Co a],'b'); ylabel('an'); xlabel('n');
+subplot(2,2,2); stem(n,[0 b],'r'); ylabel('bn'); xlabel('n');
+subplot(2,2,3); stem(n,[Co Cn],'y'); ylabel('cn'); xlabel('n');
+subplot(2,2,4); stem(n,[0 thetan],'r'); ylabel('\theta[rad]'); xlabel('n');
