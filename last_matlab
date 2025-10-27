@@ -1,0 +1,50 @@
+ Draw all possible cases of exponentials signals γnu(n) using subplots in a single figure window, where,
+λ = r/Ω, with r and Ω being real and positive. Also, provide commentary on the resulting signal
+patterns.
+
+
+% MATLAB Code to draw all possible cases of the real, positive exponential signal
+
+% 1. Define the time index n (causal signal)
+n = 0:20;
+
+% 2. Define the three possible cases for lambda (lambda = r/Omega)
+lambda1 = 0.8;    % Case 1: 0 < lambda < 1 (Decaying)
+lambda2 = 1.0;    % Case 2: lambda = 1 (Constant)
+lambda3 = 1.2;    % Case 3: lambda > 1 (Growing)
+
+% 3. Calculate the signals
+x1_n = lambda1.^n;
+x2_n = lambda2.^n;
+x3_n = lambda3.^n;
+
+% 4. Create the figure and subplots
+figure('Name', 'Discrete-Time Real Exponential Signals', 'Position', [100, 100, 800, 700]);
+
+% --- Subplot 1: Decaying Exponential (0 < lambda < 1) ---
+subplot(3, 1, 1);
+stem(n, x1_n, 'filled', 'MarkerSize', 4);
+title(['Case 1: Decaying Signal (\lambda = ', num2str(lambda1), ')']);
+xlabel('Time Index (n)');
+ylabel('Amplitude');
+grid on;
+
+% --- Subplot 2: Constant Signal (lambda = 1) ---
+subplot(3, 1, 2);
+stem(n, x2_n, 'filled', 'MarkerSize', 4);
+title(['Case 2: Constant Signal (\lambda = ', num2str(lambda2), ')']);
+xlabel('Time Index (n)');
+ylabel('Amplitude');
+grid on;
+
+% --- Subplot 3: Growing Exponential (lambda > 1) ---
+subplot(3, 1, 3);
+stem(n, x3_n, 'filled', 'MarkerSize', 4);
+title(['Case 3: Growing Signal (\lambda = ', num2str(lambda3), ')']);
+xlabel('Time Index (n)');
+ylabel('Amplitude');
+ylabel('Amplitude');
+grid on;
+
+
+ 
