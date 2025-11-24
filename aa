@@ -1,0 +1,160 @@
+Nice, this is a good time to make a “cheat sheet” for your code.
+I’ll treat this as starting **from the original code for x(t) = e^{-t/2}**:
+
+```matlab
+To = pi; wo = 2*pi/To;
+h = 0.001; t = 0:h:(To-h);
+
+y = exp(-t/2);      % <-- ORIGINAL SIGNAL x(t) on [0, To)
+
+N = length(y);
+Co = sum(y)/(N-1);
+for n = 1:10
+    a(n) = 2*sum(y.*cos(n*wo*t))/(N-1);
+    b(n) = 2*sum(y.*sin(n*wo*t))/(N-1);
+end
+
+Cn = sqrt(a.^2 + b.^2);
+thetan = atan2(-b, a);
+```
+
+To handle **time operations** correctly for the **periodic** signal, it’s safest to always:
+
+```matlab
+tau = mod( something_with_t , To);   % bring argument inside [0, To)
+y   = exp(-tau/2);                   % because original definition is e^{-t/2} on [0,To)
+```
+
+---
+
+## 1️⃣ Time Reversal: (x(-t))
+
+**Goal:** coefficients of the periodic signal (x_p(-t)).
+
+**Change only these lines:**
+
+```matlab
+t   = 0:h:(To-h);
+tau = mod(-t, To);      % argument = -t wrapped into [0, To)
+y   = exp(-tau/2);      % x(-t)
+```
+
+Everything else (N, sums, plots) stays the same.
+
+---
+
+## 2️⃣ Time Shift: (x(t - t_0)) and (x(t + t_0))
+
+Let (t_0) be some shift (e.g. (t_0 = To/4)).
+
+### (a) Delay: (x(t - t_0))
+
+```matlab
+t0  = To/4;             % choose any shift
+t   = 0:h:(To-h);
+tau = mod(t - t0, To);  % argument = t - t0 wrapped into [0,To)
+y   = exp(-tau/2);      % x(t - t0)
+```
+
+### (b) Advance: (x(t + t_0))
+
+```matlab
+t0  = To/4;
+t   = 0:h:(To-h);
+tau = mod(t + t0, To);  % argument = t + t0 wrapped into [0,To)
+y   = exp(-tau/2);      % x(t + t0)
+```
+
+Again, everything after `y` is unchanged.
+
+---
+
+## 3️⃣ Time Scaling (compression / expansion): (x(a t))
+
+This one is trickier because **time scaling changes the period**.
+
+* Original: period (T_0), signal (x_p(t)).
+* New signal (x_a(t) = x_p(a t)) has **period** (T_0' = T_0 / |a|).
+
+So you must change **both** the grid and the period.
+
+Let’s say (a = 2) (**time compression**, “faster” signal):
+
+```matlab
+a   = 2;                    % >1: compressed, <1: expanded
+To  = pi;                   % original period
+To_new = To / abs(a);       % new period
+wo  = 2*pi/To_new;
+
+h   = 0.001;
+t   = 0:h:(To_new - h);     % integrate over ONE period of the new signal
+
+tau = mod(a * t, To);       % argument = a*t wrapped in ORIGINAL [0,To)
+y   = exp(-tau/2);          % x(a t)
+```
+
+* For **expansion** (e.g. `a = 0.5`), use the same formula; `To_new` will be larger.
+
+Then the rest (N, a(n), b(n), etc.) is the same.
+
+---
+
+## 4️⃣ Simple amplitude scaling: (k,x(t))
+
+If you just multiply the signal by a constant (k):
+
+```matlab
+k   = 3;                    % for example
+t   = 0:h:(To-h);
+y   = k * exp(-t/2);        % k * x(t)
+```
+
+All coefficients just get multiplied by `k` (including `Co`, `a`, `b`, `Cn`).
+
+---
+
+## 5️⃣ Combining operations
+
+You can combine them by putting all operations inside the `tau = mod(...)`:
+
+Example: **time-reversed and delayed**: (x(-(t - t_0)) = x(t_0 - t))
+
+```matlab
+t0  = To/4;
+t   = 0:h:(To-h);
+tau = mod(t0 - t, To);   % combine shift + reversal
+y   = exp(-tau/2);
+```
+
+Example: **compressed and shifted**: (x(a(t - t_0)))
+
+```matlab
+a   = 2;
+t0  = To/4;
+To  = pi;
+To_new = To / abs(a);
+wo  = 2*pi/To_new;
+
+t   = 0:h:(To_new - h);
+tau = mod(a*(t - t0), To);
+y   = exp(-tau/2);
+```
+
+---
+
+## 🔐 Mental template (most important takeaway)
+
+Whenever you want a new signal built from the periodic (x(t) = e^{-t/2}):
+
+1. Write its continuous-time form as (x(\phi(t)))
+   (e.g. (\phi(t) = -t), (t - t_0), (a t), etc.)
+2. In MATLAB do:
+
+```matlab
+tau = mod( phi(t) , To);    % wrap argument into one period
+y   = exp(-tau/2);          % because original definition is on [0,To)
+```
+
+Then reuse the **same coefficient- and plotting code**.
+
+If you want, next step I can give you a final neat version of the script with a **function handle** like `x_fun(t)` and a switch for each case (original / reversed / shifted / scaled) so you just change one parameter.
